@@ -1,0 +1,46 @@
+---
+title: "ML_microbiota"
+author: "Nitin Agrawal"
+date: "2025-07-23"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r}
+library(phyloseq)
+library(randomForest)
+library(pROC)
+library(ggplot2)
+```
+
+#Loading data
+```{r}
+data("GlobalPatterns")
+gp <- GlobalPatterns
+sample_data(gp)$Group <- ifelse(sample_data(gp)$SampleType == "Feces", "Disease", "Healthy")
+
+```
+
+#Preprocessing
+
+```{r}
+otu <- as.data.frame(otu_table(gp))
+otu <- t(otu)
+labels <- sample_data(gp)$Group
+
+# Random Forest
+model <- randomForest(x = otu, y = as.factor(labels))
+print(model)
+
+```
+#ROC curve
+
+```{r}
+pred <- predict(model, type = "prob")[, "Disease"]
+roc_obj <- roc(labels, pred)
+plot(roc_obj)
+
+```
+
